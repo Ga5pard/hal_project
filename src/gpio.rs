@@ -1,66 +1,54 @@
 // gpio.rs
-
-// Déclarations des adresses des registres pour le port B de l'Atmega328p
-const DDRB: *mut u8 = 0x24 as *mut u8;  // Registre de direction (entrée/sortie) pour PORTB
-const PORTB: *mut u8 = 0x25 as *mut u8; // Registre de données pour définir l'état des broches (HIGH/LOW)
-const PINB: *const u8 = 0x23 as *const u8; // Registre pour lire l'état des broches configurées en entrée
-
 /// Structure représentant une broche GPIO.
 pub struct GPIO {
-    pub pin: u8, // Le numéro de la broche (0 à 7) correspondant à PORTB
+    pub pin: u8, // Numéro de la broche (entre 0 et 7)
 }
 
 impl GPIO {
+    /// Initialise une nouvelle broche GPIO en tant qu'entrée ou sortie.
+    /// Retourne None si le numéro de broche est invalide (hors 0-7).
     pub unsafe fn new(pin: u8, output: bool) -> Option<Self> {
         if pin > 7 {
             return None;
         }
-        config_pin(pin, output);
+        Self::config_pin(pin, output);
         Some(GPIO { pin })
     }
 
-    pub unsafe fn set_mode(&self, output: bool) {
-        config_pin(self.pin, output);
+    /// Configure une broche comme entrée ou sortie.
+    /// Appelle les fonctions spécifiques à la cible.
+    pub unsafe fn config_pin(pin: u8, output: bool) {
+        #[cfg(target_arch = "avr")]
+        crate::atmega::config_pin(pin, output);
+
+        #[cfg(target_arch = "arm")]
+        crate::cortex_m::config_pin(pin, output);
     }
 
+    /// Met la broche à l'état `HIGH`.
     pub unsafe fn set_high(&self) {
-        write_pin(self.pin, true);
+        #[cfg(target_arch = "avr")]
+        crate::atmega::write_pin(self.pin, true);
+
+        #[cfg(target_arch = "arm")]
+        crate::cortex_m::write_pin(self.pin, true);
     }
 
+    /// Met la broche à l'état `LOW`.
     pub unsafe fn set_low(&self) {
-        write_pin(self.pin, false);
+        #[cfg(target_arch = "avr")]
+        crate::atmega::write_pin(self.pin, false);
+
+        #[cfg(target_arch = "arm")]
+        crate::cortex_m::write_pin(self.pin, false);
     }
 
+    /// Vérifie si la broche est à l'état `HIGH`.
     pub unsafe fn is_high(&self) -> bool {
-        read_pin(self.pin)
-    }
-}
+        #[cfg(target_arch = "avr")]
+        return crate::atmega::read_pin(self.pin);
 
-unsafe fn config_pin(pin: u8, output: bool) {
-    if pin > 7 {
-        return;
+        #[cfg(target_arch = "arm")]
+        return crate::cortex_m::read_pin(self.pin);
     }
-    if output {
-        core::ptr::write_volatile(DDRB, core::ptr::read_volatile(DDRB) | (1 << pin));
-    } else {
-        core::ptr::write_volatile(DDRB, core::ptr::read_volatile(DDRB) & !(1 << pin));
-    }
-}
-
-unsafe fn write_pin(pin: u8, high: bool) {
-    if pin > 7 {
-        return;
-    }
-    if high {
-        core::ptr::write_volatile(PORTB, core::ptr::read_volatile(PORTB) | (1 << pin));
-    } else {
-        core::ptr::write_volatile(PORTB, core::ptr::read_volatile(PORTB) & !(1 << pin));
-    }
-}
-
-unsafe fn read_pin(pin: u8) -> bool {
-    if pin > 7 {
-        return false;
-    }
-    (core::ptr::read_volatile(PINB) & (1 << pin)) != 0
 }
