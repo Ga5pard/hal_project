@@ -34,6 +34,16 @@ fn main() -> ! {
             }
         }
     }
+
+/* [CORRECTION USART] 
+
+When you are using 'unsafe{}', it is more pertinent to target precisely the emplacement where you do unsafe action.
+If you just put all your code in it, its precision advantage does not exist anymore.
+
+(Don't hesitate to remove this comment)
+*/
+
+    
 }
 
 #[panic_handler]
