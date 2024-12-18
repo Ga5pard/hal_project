@@ -1,12 +1,11 @@
-// gpio.rs
-/// Structure représentant une broche GPIO.
+/// Represents a GPIO pin.
 pub struct GPIO {
-    pub pin: u8, // Numéro de la broche (entre 0 et 7)
+    pub pin: u8, // Pin number (0 to 7)
 }
 
 impl GPIO {
-    /// Initialise une nouvelle broche GPIO en tant qu'entrée ou sortie.
-    /// Retourne None si le numéro de broche est invalide (hors 0-7).
+    /// Initializes a new GPIO pin as input or output.
+    /// Returns None if the pin number is invalid (outside 0-7).
     pub unsafe fn new(pin: u8, output: bool) -> Option<Self> {
         if pin > 7 {
             return None;
@@ -15,8 +14,8 @@ impl GPIO {
         Some(GPIO { pin })
     }
 
-    /// Configure une broche comme entrée ou sortie.
-    /// Appelle les fonctions spécifiques à la cible.
+    /// Configures a pin as input or output.
+    /// Calls target-specific functions.
     pub unsafe fn config_pin(pin: u8, output: bool) {
         #[cfg(target_arch = "avr")]
         crate::atmega::config_pin(pin, output);
@@ -25,7 +24,7 @@ impl GPIO {
         crate::cortex_m::config_pin(pin, output);
     }
 
-    /// Met la broche à l'état `HIGH`.
+    /// Sets the pin to `HIGH` state.
     pub unsafe fn set_high(&self) {
         #[cfg(target_arch = "avr")]
         crate::atmega::write_pin(self.pin, true);
@@ -34,7 +33,7 @@ impl GPIO {
         crate::cortex_m::write_pin(self.pin, true);
     }
 
-    /// Met la broche à l'état `LOW`.
+    /// Sets the pin to `LOW` state.
     pub unsafe fn set_low(&self) {
         #[cfg(target_arch = "avr")]
         crate::atmega::write_pin(self.pin, false);
@@ -43,7 +42,7 @@ impl GPIO {
         crate::cortex_m::write_pin(self.pin, false);
     }
 
-    /// Vérifie si la broche est à l'état `HIGH`.
+    /// Checks if the pin is in `HIGH` state.
     pub unsafe fn is_high(&self) -> bool {
         #[cfg(target_arch = "avr")]
         return crate::atmega::read_pin(self.pin);
