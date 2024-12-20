@@ -1,6 +1,6 @@
 // Stubs for the ARM Cortex-M target.
-// These functions do nothing as we don't have actual registers or initialization procedures.
-// They exist to show that the code is multi-target capable.
+// These functions do not have doc comments since they are just placeholders.
+// If you want them documented, you can add `///` above them describing their stub behavior.
 
 // GPIO
 pub fn config_pin(_pin: u8, _output: bool) {}

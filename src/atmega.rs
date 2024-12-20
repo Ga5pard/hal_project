@@ -1,6 +1,6 @@
 // This file contains the target-specific definitions and implementations for the Atmega328p.
 
-// GPIO 
+// GPIO
 pub const DDRB: *mut u8 = 0x24 as *mut u8;
 pub const PORTB: *mut u8 = 0x25 as *mut u8;
 pub const PINB: *const u8 = 0x23 as *const u8;
@@ -32,14 +32,13 @@ pub const SPDR: *mut u8 = 0x2E as *mut u8;
 const SPE: u8 = 6;
 const MSTR: u8 = 4;
 const SPIF: u8 = 7; 
-// Additional bits such as DORD, CPOL, CPHA could be added if needed.
 
 // I2C (TWI) Registers
-pub const TWBR: *mut u8 = 0x20 as *mut u8; // TWI Bit Rate Register
-pub const TWSR: *mut u8 = 0x21 as *mut u8; // TWI Status Register
-pub const TWAR: *mut u8 = 0x22 as *mut u8; // TWI (Slave) Address Register
-pub const TWDR: *mut u8 = 0x23 as *mut u8; // TWI Data Register
-pub const TWCR: *mut u8 = 0x56 as *mut u8; // TWI Control Register
+pub const TWBR: *mut u8 = 0x20 as *mut u8; 
+pub const TWSR: *mut u8 = 0x21 as *mut u8; 
+pub const TWAR: *mut u8 = 0x22 as *mut u8; 
+pub const TWDR: *mut u8 = 0x23 as *mut u8; 
+pub const TWCR: *mut u8 = 0x56 as *mut u8; 
 
 // TWI bit definitions
 const TWINT: u8 = 7;
@@ -52,7 +51,7 @@ const TWEN:  u8 = 2;
 const F_CPU: u32 = 16_000_000;
 
 // GPIO Functions
-// Configure a pin on Port B as input or output.
+/// Configure a pin on Port B as input or output.
 pub fn config_pin(pin: u8, output: bool) {
     if pin > 7 {
         panic!("Invalid pin number: {}. Must be between 0 and 7.", pin);
@@ -68,7 +67,7 @@ pub fn config_pin(pin: u8, output: bool) {
     }
 }
 
-// Write a HIGH or LOW level to a specified pin on Port B.
+/// Write a HIGH or LOW level to a specified pin on Port B.
 pub fn write_pin(pin: u8, high: bool) {
     if pin > 7 {
         panic!("Invalid pin number: {}. Must be between 0 and 7.", pin);
@@ -84,7 +83,7 @@ pub fn write_pin(pin: u8, high: bool) {
     }
 }
 
-// Read the state of a pin on Port B.
+/// Read the state of a pin on Port B.
 pub fn read_pin(pin: u8) -> bool {
     if pin > 7 {
         panic!("Invalid pin number: {}. Must be between 0 and 7.", pin);
@@ -94,8 +93,7 @@ pub fn read_pin(pin: u8) -> bool {
     }
 }
 
-// USART Functions
-// Initialize the USART with the given baud rate and optional double-speed mode.
+/// Initialize the USART with the given baud rate and optional double-speed mode.
 pub fn usart_init(baud_rate: u16, double_speed: bool) {
     unsafe {
         core::ptr::write_volatile(UBRRH, (baud_rate >> 8) as u8);
@@ -117,7 +115,7 @@ pub fn usart_init(baud_rate: u16, double_speed: bool) {
     }
 }
 
-// Write a single byte via USART.
+/// Write a single byte via USART.
 pub fn usart_write(data: u8) {
     unsafe {
         // Wait until UDRE=1 (transmit buffer empty)
@@ -126,7 +124,7 @@ pub fn usart_write(data: u8) {
     }
 }
 
-// Read a single byte from USART.
+/// Read a single byte from USART.
 pub fn usart_read() -> u8 {
     unsafe {
         // Wait until RXC=1 (data received)
@@ -135,8 +133,7 @@ pub fn usart_read() -> u8 {
     }
 }
 
-// SPI Functions
-// Initialize SPI in master mode with the given clock divider.
+/// Initialize SPI in master mode with the given clock divider.
 pub fn spi_init_master(clock_div: u8) {
     unsafe {
         let mut spcr_val = (1 << SPE) | (1 << MSTR);
@@ -145,7 +142,7 @@ pub fn spi_init_master(clock_div: u8) {
     }
 }
 
-// Initialize SPI in slave mode.
+/// Initialize SPI in slave mode.
 pub fn spi_init_slave() {
     unsafe {
         let spcr_val = (1 << SPE);
@@ -153,7 +150,7 @@ pub fn spi_init_slave() {
     }
 }
 
-// Transfer one byte via SPI and return the received byte.
+/// Transfer one byte via SPI and return the received byte.
 pub fn spi_transfer(data: u8) -> u8 {
     unsafe {
         core::ptr::write_volatile(SPDR, data);
@@ -162,24 +159,22 @@ pub fn spi_transfer(data: u8) -> u8 {
     }
 }
 
-// Receive one byte via SPI (by performing a dummy transfer).
+/// Receive one byte via SPI (by performing a dummy transfer).
 pub fn spi_receive() -> u8 {
     spi_transfer(0xFF)
 }
 
-// I2C (TWI) Functions
-// Initialize the I2C (TWI) bus with a given frequency (e.g., 100000 for 100kHz).
+/// Initialize the I2C (TWI) bus with a given frequency (e.g., 100000 for 100kHz).
 pub fn i2c_init(frequency: u32) {
     let twbr_val = ((F_CPU / frequency) - 16) / 2;
     unsafe {
         // Prescaler = 1 (TWSR = 0)
         core::ptr::write_volatile(TWSR, 0x00);
         core::ptr::write_volatile(TWBR, twbr_val as u8);
-        // No need to set TWAR or TWCR for master mode if we don't need slave addressing.
     }
 }
 
-// Send a START condition.
+/// Send a START condition.
 pub fn i2c_start() -> bool {
     unsafe {
         core::ptr::write_volatile(TWCR, (1 << TWINT) | (1 << TWSTA) | (1 << TWEN));
@@ -188,25 +183,24 @@ pub fn i2c_start() -> bool {
     true
 }
 
-// Send a STOP condition.
+/// Send a STOP condition.
 pub fn i2c_stop() {
     unsafe {
         core::ptr::write_volatile(TWCR, (1 << TWINT) | (1 << TWEN) | (1 << TWSTO));
     }
 }
 
-// Write one byte on the I2C bus.
+/// Write one byte on the I2C bus.
 pub fn i2c_write(byte: u8) -> bool {
     unsafe {
         core::ptr::write_volatile(TWDR, byte);
         core::ptr::write_volatile(TWCR, (1 << TWINT) | (1 << TWEN));
         while (core::ptr::read_volatile(TWCR) & (1 << TWINT)) == 0 {}
     }
-    // In a full implementation, we would check the status bits in TWSR.
     true
 }
 
-// Read one byte from the I2C bus. If ack=true, sends an ACK, otherwise sends a NACK.
+/// Read one byte from the I2C bus. If ack=true, sends an ACK, otherwise sends a NACK.
 pub fn i2c_read(ack: bool) -> u8 {
     unsafe {
         let ctrl = if ack {

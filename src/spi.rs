@@ -20,7 +20,7 @@ impl SPI {
         crate::cortex_m::spi_init_slave();
     }
 
-    /// Transfer a byte via SPI (full-duplex). Returns the received byte.
+    /// Transfer a byte via SPI (full-duplex) and return the received byte.
     pub fn transfer(data: u8) -> u8 {
         #[cfg(target_arch = "avr")]
         return crate::atmega::spi_transfer(data);

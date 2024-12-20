@@ -1,6 +1,6 @@
 /// Represents a GPIO pin on the selected target. For AVR, we use Port B (0-7).
 pub struct GPIO {
-    pub pin: u8, // Pin number (0 to 7)
+    pub pin: u8,
 }
 
 impl GPIO {

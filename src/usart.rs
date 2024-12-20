@@ -3,7 +3,7 @@ pub struct USART;
 
 impl USART {
     /// Initialize the USART with a given baud rate.
-    /// double_speed = true will enable U2X mode on AVR.
+    /// If double_speed is true, U2X mode will be enabled on AVR.
     pub fn init(baud_rate: u16, double_speed: bool) {
         #[cfg(target_arch = "avr")]
         crate::atmega::usart_init(baud_rate, double_speed);
