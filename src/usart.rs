@@ -1,19 +1,19 @@
-/// Represents the USART.
+/// Represents the USART interface.
 pub struct USART;
 
 impl USART {
-    /// Initializes USART with a given baud rate.
-    /// Calls target-specific register setup.
-    pub unsafe fn init(baud_rate: u16) {
+    /// Initialize the USART with a given baud rate.
+    /// double_speed = true will enable U2X mode on AVR.
+    pub fn init(baud_rate: u16, double_speed: bool) {
         #[cfg(target_arch = "avr")]
-        crate::atmega::usart_init(baud_rate);
+        crate::atmega::usart_init(baud_rate, double_speed);
 
         #[cfg(target_arch = "arm")]
-        crate::cortex_m::usart_init(baud_rate);
+        crate::cortex_m::usart_init(baud_rate, double_speed);
     }
 
-    /// Sends a byte via USART.
-    pub unsafe fn write(data: u8) {
+    /// Write a byte via USART.
+    pub fn write(data: u8) {
         #[cfg(target_arch = "avr")]
         crate::atmega::usart_write(data);
 
@@ -21,8 +21,8 @@ impl USART {
         crate::cortex_m::usart_write(data);
     }
 
-    /// Receives a byte via USART.
-    pub unsafe fn read() -> u8 {
+    /// Read a byte from USART.
+    pub fn read() -> u8 {
         #[cfg(target_arch = "avr")]
         return crate::atmega::usart_read();
 

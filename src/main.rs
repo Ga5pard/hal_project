@@ -4,60 +4,67 @@
 mod gpio;
 mod usart;
 mod spi;
+mod i2c;
+
 #[cfg(target_arch = "avr")]
 mod atmega;
 
 #[cfg(target_arch = "arm")]
 mod cortex_m;
 
+#[cfg(target_arch = "arm")]
 use cortex_m_rt::entry;
+
 use gpio::GPIO;
 use usart::USART;
 use spi::SPI;
+use i2c::I2C;
 
+#[cfg(target_arch = "arm")]
 #[entry]
 fn main() -> ! {
-    unsafe {
-        // Initialize USART at 9600 baud
-        USART::init(9600);
+    // ARM example (stub)
+    USART::init(9600, false);
+    SPI::init_master(0x01);
+    I2C::init(100_000); // 100kHz I2C
+    loop {}
+}
 
-        // Initialize SPI in master mode
-        SPI::init_master(0x01);
+#[cfg(target_arch = "avr")]
+#[no_mangle]
+pub extern "C" fn main() -> ! {
+    // AVR example:
+    // - Toggle an LED on PB5
+    // - Send characters over USART
+    // - Send/receive data over SPI
+    // - Initialize I2C and perform a start/write transaction
 
-        // Initialize GPIO pin 5 as output
-        if let Some(led) = GPIO::new(5, true) {
-            loop {
-                // Turn on the LED and send 'H' via USART and SPI
-                led.set_high();
-                USART::write(b'H');
-                SPI::transfer(b'H');
-                for _ in 0..1_000_000 {}
+    USART::init(9600, false);
+    SPI::init_master(0x01);
+    I2C::init(100_000); // I2C at 100kHz
 
-                // Turn off the LED and send 'L' via USART and SPI
-                led.set_low();
-                USART::write(b'L');
-                SPI::transfer(b'L');
-                for _ in 0..1_000_000 {}
-            }
-        }
+    let led = GPIO::new(5, true).expect("Invalid LED pin");
 
-        #[cfg(target_arch = "arm")]
-        {
-            // Example for Cortex-M
-            USART::write(b'A');
-            SPI::transfer(b'A');
-        }
+    // Example I2C usage:
+    // Imagine we have a device at address 0x50
+    I2C::start();
+    I2C::write(0x50 << 1); // Address + write bit
+    I2C::write(0x00); // For example, write to register 0x00
+    I2C::stop();
+
+    loop {
+        // Turn LED on, send 'H' over USART and SPI
+        led.set_high();
+        USART::write(b'H');
+        SPI::transfer(b'H');
+        for _ in 0..1_000_000 {}
+
+        // Turn LED off, send 'L' over USART and SPI
+        led.set_low();
+        USART::write(b'L');
+        SPI::transfer(b'L');
+        for _ in 0..1_000_000 {}
     }
-
-/* [CORRECTION USART] 
-
-When you are using 'unsafe{}', it is more pertinent to target precisely the emplacement where you do unsafe action.
-If you just put all your code in it, its precision advantage does not exist anymore.
-
-(Don't hesitate to remove this comment)
-*/
-
-    
 }
 
 #[panic_handler]

@@ -1,12 +1,12 @@
-/// Represents a GPIO pin.
+/// Represents a GPIO pin on the selected target. For AVR, we use Port B (0-7).
 pub struct GPIO {
     pub pin: u8, // Pin number (0 to 7)
 }
 
 impl GPIO {
-    /// Initializes a new GPIO pin as input or output.
-    /// Returns None if the pin number is invalid (outside 0-7).
-    pub unsafe fn new(pin: u8, output: bool) -> Option<Self> {
+    /// Create a new GPIO pin object and configure it as input or output.
+    /// Returns None if the pin number is invalid.
+    pub fn new(pin: u8, output: bool) -> Option<Self> {
         if pin > 7 {
             return None;
         }
@@ -14,9 +14,7 @@ impl GPIO {
         Some(GPIO { pin })
     }
 
-    /// Configures a pin as input or output.
-    /// Calls target-specific functions.
-    pub unsafe fn config_pin(pin: u8, output: bool) {
+    fn config_pin(pin: u8, output: bool) {
         #[cfg(target_arch = "avr")]
         crate::atmega::config_pin(pin, output);
 
@@ -24,8 +22,8 @@ impl GPIO {
         crate::cortex_m::config_pin(pin, output);
     }
 
-    /// Sets the pin to `HIGH` state.
-    pub unsafe fn set_high(&self) {
+    /// Set the pin to HIGH.
+    pub fn set_high(&self) {
         #[cfg(target_arch = "avr")]
         crate::atmega::write_pin(self.pin, true);
 
@@ -33,8 +31,8 @@ impl GPIO {
         crate::cortex_m::write_pin(self.pin, true);
     }
 
-    /// Sets the pin to `LOW` state.
-    pub unsafe fn set_low(&self) {
+    /// Set the pin to LOW.
+    pub fn set_low(&self) {
         #[cfg(target_arch = "avr")]
         crate::atmega::write_pin(self.pin, false);
 
@@ -42,8 +40,8 @@ impl GPIO {
         crate::cortex_m::write_pin(self.pin, false);
     }
 
-    /// Checks if the pin is in `HIGH` state.
-    pub unsafe fn is_high(&self) -> bool {
+    /// Returns true if the pin is HIGH.
+    pub fn is_high(&self) -> bool {
         #[cfg(target_arch = "avr")]
         return crate::atmega::read_pin(self.pin);
 
