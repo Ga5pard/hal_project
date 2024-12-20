@@ -9,3 +9,9 @@ It would be nice to have something to prevent modifying the register in an incoh
 [CORRECTION USART] (Don't hesitate to remove this part)
 You could try implementing the different USART mode (asynchrone double speed for example).
 You didn't implement USART for your second target.
+
+[CORRECTION SPI] (don't hesitate to remove this part)
+You didn't implement the reception part of the SPI feature.
+You could implement the peripheral/slave mode as well.
+You didn't really implement the SPI feature for your second target (you didn't modify its registers for example).
+You could abstract even more the register content, for example '6' is not very explicit in '1 << 6'. You may want to customize your parameters more accurately.
